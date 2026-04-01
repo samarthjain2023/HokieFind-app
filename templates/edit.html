@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Listing</title>
+</head>
+<body>
+
+<h1>Edit Listing</h1>
+
+<form method="POST" action="/update/{{ listing[0] }}">
+    <input name="location" value="{{ listing[3] }}" required>
+    <input name="image" value="{{ listing[6] }}">
+    <button type="submit">Update</button>
+</form>
+
+<a href="/">Back</a>
+
+</body>
+</html>
