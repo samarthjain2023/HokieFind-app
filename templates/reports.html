@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reports</title>
+</head>
+<body>
+
+<h2>Reports</h2>
+
+<a href="/"><button>Back</button></a>
+
+<hr>
+
+<h3>📍 Listings per Location</h3>
+<ul>
+{% for row in listings_per_location %}
+    <li>{{ row[0] }}: {{ row[1] }} listings</li>
+{% endfor %}
+</ul>
+
+<hr>
+
+<h3>📦 Claims per Listing</h3>
+<ul>
+{% for row in claims_per_listing %}
+    <li>Listing {{ row[0] }}: {{ row[1] }} claims</li>
+{% endfor %}
+</ul>
+
+<hr>
+
+<h3>👤 Listings per User</h3>
+<ul>
+{% for row in listings_per_user %}
+    <li>{{ row[0] }}: {{ row[1] }} listings</li>
+{% endfor %}
+</ul>
+
+</body>
+</html>

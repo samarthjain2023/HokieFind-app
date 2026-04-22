@@ -5,26 +5,43 @@
 </head>
 <body>
 
+<!-- NAVBAR -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>HokieFind</h2>
+    <div>
+        <a href="/account"><button>Account</button></a>
+        <a href="/reports"><button>Reports</button></a>
+        <a href="/logout"><button>Logout</button></a>
+    </div>
+</div>
+
 <h1>HokieFind Listings</h1>
 
+<!-- ADD LISTING -->
 <h2>Add Listing</h2>
 <form action="/add" method="POST">
+    <input name="title" placeholder="Item Title" required>
+    <input name="description" placeholder="Description" required>
     <input name="location" placeholder="Location Found" required>
     <input name="image" placeholder="Image URL">
     <button type="submit">Add</button>
 </form>
 
+<!-- LISTINGS -->
 <h2>All Listings</h2>
 
 <ul>
     {% for item in listings %}
-        <li>
-            ID: {{ item[0] }} |
-            Location: {{ item[3] }} |
-            Image: {{ item[6] }}
-
-            <a href="/edit/{{ item[0] }}">Edit</a>
-            <a href="/delete/{{ item[0] }}">Delete</a>
+        <li style="margin-bottom: 15px;">
+            <strong>{{ item[2] }}</strong> <br>
+            {{ item[3] }} <br>
+            📍 {{ item[1] }} |
+            <a href="{{ item[4] }}" target="_blank">Image</a>
+            <br>
+            <a href="/edit/{{ item[0] }}">Edit</a> |
+            <a href="/delete/{{ item[0] }}">Delete</a> |
+            <a href="/claim/{{ item[0] }}">Claim</a> |
+            <a href="/claims/{{ item[0] }}">View Claims</a>
         </li>
     {% endfor %}
 </ul>

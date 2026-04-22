@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Account</title>
+</head>
+<body>
+
+<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+    <h2>Account</h2>
+    <div>
+        <a href="/"><button>Home</button></a>
+        <a href="/logout"><button>Logout</button></a>
+    </div>
+</div>
+
+<h3>User Info</h3>
+<p><b>Name:</b> {{ user[0] }} {{ user[1] }}</p>
+<p><b>Email:</b> {{ user[2] }}</p>
+
+<hr>
+
+<h3>Your Listings</h3>
+
+{% if listings %}
+    <ul>
+    {% for item in listings %}
+        <li style="margin-bottom: 15px;">
+            <strong>{{ item[7] }}</strong> <br>
+            {{ item[8] }} <br>
+            📍 {{ item[3] }} |
+            <a href="{{ item[6] }}" target="_blank">Image</a>
+            <br>
+            <a href="/edit/{{ item[0] }}">Edit</a> |
+            <a href="/delete/{{ item[0] }}">Delete</a>
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No listings yet.</p>
+{% endif %}
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Claims</title>
+</head>
+<body>
+
+<h2>Claims for this Item</h2>
+
+<a href="/"><button>Back</button></a>
+
+<hr>
+
+{% if claims %}
+    <ul>
+    {% for claim in claims %}
+        <li style="margin-bottom: 15px;">
+            <strong>{{ claim[1] }} {{ claim[2] }}</strong><br>
+            {{ claim[3] }}
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No claims yet.</p>
+{% endif %}
+
+</body>
+</html>
