@@ -2,39 +2,134 @@
 <html>
 <head>
     <title>Reports</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+        }
+
+        .navbar {
+            background-color: #861F41;
+            color: white;
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar button {
+            padding: 8px 14px;
+            border: none;
+            background-color: white;
+            color: #861F41;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 70%;
+            margin: 30px auto;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .row:last-child {
+            border-bottom: none;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: #861F41;
+        }
+
+    </style>
 </head>
+
 <body>
 
-<h2>Reports</h2>
+<div class="navbar">
+    <h2>Reports</h2>
+    <a href="/"><button>Back</button></a>
+</div>
 
-<a href="/"><button>Back</button></a>
+<div class="container">
 
-<hr>
+    <!-- SUMMARY -->
+    <div class="card">
+        <h2>📊 Summary</h2>
 
-<h3>📍 Listings per Location</h3>
-<ul>
-{% for row in listings_per_location %}
-    <li>{{ row[0] }}: {{ row[1] }} listings</li>
-{% endfor %}
-</ul>
+        <div class="row">
+            <span>Total Listings</span>
+            <span class="highlight">
+                {{ listings_per_location | sum(attribute=1) }}
+            </span>
+        </div>
 
-<hr>
+        <div class="row">
+            <span>Total Claims</span>
+            <span class="highlight">
+                {{ claims_per_listing | sum(attribute=1) }}
+            </span>
+        </div>
+    </div>
 
-<h3>📦 Claims per Listing</h3>
-<ul>
-{% for row in claims_per_listing %}
-    <li>Listing {{ row[0] }}: {{ row[1] }} claims</li>
-{% endfor %}
-</ul>
+    <!-- TOP LOCATIONS -->
+    <div class="card">
+        <h2>📍 Top Locations</h2>
 
-<hr>
+        {% for loc, count in listings_per_location if count > 0 %}
+            <div class="row">
+                <span>{{ loc }}</span>
+                <span class="highlight">{{ count }}</span>
+            </div>
+        {% endfor %}
+    </div>
 
-<h3>👤 Listings per User</h3>
-<ul>
-{% for row in listings_per_user %}
-    <li>{{ row[0] }}: {{ row[1] }} listings</li>
-{% endfor %}
-</ul>
+    <!-- MOST ACTIVE USERS -->
+    <div class="card">
+        <h2>👤 Most Active Users</h2>
+
+        {% for name, count in listings_per_user if count > 0 %}
+            <div class="row">
+                <span>{{ name }}</span>
+                <span class="highlight">{{ count }} listings</span>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- CLAIM ACTIVITY -->
+    <div class="card">
+        <h2>📦 Claim Activity</h2>
+
+        {% for listing, count in claims_per_listing if count > 0 %}
+            <div class="row">
+                <span>Listing {{ listing }}</span>
+                <span class="highlight">{{ count }} claims</span>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
 
 </body>
 </html>

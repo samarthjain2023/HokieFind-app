@@ -2,27 +2,107 @@
 <html>
 <head>
     <title>Claims</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background-color: #861F41;
+            color: white;
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar button {
+            margin-left: 10px;
+            padding: 8px 14px;
+            border: none;
+            background-color: white;
+            color: #861F41;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* CONTAINER */
+        .container {
+            width: 60%;
+            margin: 30px auto;
+        }
+
+        /* CARD */
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        /* CLAIM ITEM */
+        .claim {
+            border-bottom: 1px solid #eee;
+            padding: 12px 0;
+        }
+
+        .claim:last-child {
+            border-bottom: none;
+        }
+
+        .name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .message {
+            color: #444;
+        }
+
+    </style>
 </head>
+
 <body>
 
-<h2>Claims for this Item</h2>
+<!-- NAVBAR -->
+<div class="navbar">
+    <h2>Claims</h2>
+    <div>
+        <a href="/"><button>Home</button></a>
+        <a href="/account"><button>Account</button></a>
+        <a href="/logout"><button>Logout</button></a>
+    </div>
+</div>
 
-<a href="/"><button>Back</button></a>
+<div class="container">
 
-<hr>
+    <div class="card">
+        <h2>Claims for this Item</h2>
 
-{% if claims %}
-    <ul>
-    {% for claim in claims %}
-        <li style="margin-bottom: 15px;">
-            <strong>{{ claim[1] }} {{ claim[2] }}</strong><br>
-            {{ claim[3] }}
-        </li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No claims yet.</p>
-{% endif %}
+        {% if claims %}
+            {% for claim in claims %}
+                <div class="claim">
+                    <div class="name">{{ claim[1] }} {{ claim[2] }}</div>
+                    <div class="message">{{ claim[3] }}</div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No claims yet.</p>
+        {% endif %}
+
+    </div>
+
+</div>
 
 </body>
 </html>

@@ -2,10 +2,83 @@
 <html>
 <head>
     <title>Account</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+        }
+
+        .navbar {
+            background-color: #861F41;
+            color: white;
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .navbar button {
+            margin-left: 10px;
+            padding: 8px 14px;
+            border: none;
+            background-color: white;
+            color: #861F41;
+            border-radius: 6px;
+        }
+
+        .container {
+            width: 70%;
+            margin: 30px auto;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        .listing {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+
+        .actions a {
+            margin-right: 10px;
+            color: #861F41;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .msg {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+        }
+
+        .error {
+            background-color: #ffe5e5;
+            color: #b00020;
+        }
+
+        .success {
+            background-color: #e6ffe6;
+            color: #007a00;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
+
 <body>
 
-<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+<div class="navbar">
     <h2>Account</h2>
     <div>
         <a href="/"><button>Home</button></a>
@@ -13,31 +86,69 @@
     </div>
 </div>
 
-<h3>User Info</h3>
-<p><b>Name:</b> {{ user[0] }} {{ user[1] }}</p>
-<p><b>Email:</b> {{ user[2] }}</p>
+<div class="container">
 
-<hr>
+    <!-- MESSAGES -->
+    {% if request.args.get('error') == 'password_missing' %}
+        <div class="msg error">Fill out both password fields.</div>
+    {% endif %}
 
-<h3>Your Listings</h3>
+    {% if request.args.get('error') == 'wrong_password' %}
+        <div class="msg error">Incorrect current password.</div>
+    {% endif %}
 
-{% if listings %}
-    <ul>
-    {% for item in listings %}
-        <li style="margin-bottom: 15px;">
-            <strong>{{ item[7] }}</strong> <br>
-            {{ item[8] }} <br>
-            📍 {{ item[3] }} |
-            <a href="{{ item[6] }}" target="_blank">Image</a>
-            <br>
-            <a href="/edit/{{ item[0] }}">Edit</a> |
-            <a href="/delete/{{ item[0] }}">Delete</a>
-        </li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No listings yet.</p>
-{% endif %}
+    {% if request.args.get('success') == 'password_updated' %}
+        <div class="msg success">Password updated successfully.</div>
+    {% endif %}
+
+    <!-- USER INFO -->
+    <div class="card">
+        <h2>Account Info</h2>
+        <p><b>Name:</b> {{ user[0] }} {{ user[1] }}</p>
+        <p><b>Email:</b> {{ user[2] }}</p>
+    </div>
+
+    <!-- LISTINGS -->
+    <div class="card">
+        <h2>Your Listings</h2>
+
+        {% if listings %}
+            {% for item in listings %}
+                {% if item[7] and item[8] %}
+                    <div class="listing">
+                        <strong>{{ item[7] }}</strong><br>
+                        {{ item[8] }}<br>
+                        📍 {{ item[3] }}
+
+                        {% if item[6] %}
+                            <br>
+                            <img src="{{ item[6] }}" style="width:150px; border-radius:6px;">
+                        {% endif %}
+
+                        <div class="actions">
+                            <a href="/edit/{{ item[0] }}">Edit</a>
+                            <a href="/delete/{{ item[0] }}" onclick="return confirm('Are you sure?')">Delete</a>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p>No listings yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- PASSWORD -->
+    <div class="card">
+        <h2>Change Password</h2>
+
+        <form method="POST" action="/change_password">
+            <input type="password" name="current_password" placeholder="Current Password" required>
+            <input type="password" name="new_password" placeholder="New Password" required>
+            <button type="submit">Update Password</button>
+        </form>
+    </div>
+
+</div>
 
 </body>
 </html>

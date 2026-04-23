@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Edit Listing</title>
+    <title>Admin Panel</title>
 
     <style>
         body {
@@ -45,7 +45,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.08);
         }
 
-        h1 {
+        h2 {
             margin-top: 0;
         }
 
@@ -72,16 +72,8 @@
             background-color: #6e1834;
         }
 
-        .back {
-            margin-top: 15px;
-            display: inline-block;
-            color: #861F41;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .back:hover {
-            text-decoration: underline;
+        .section-title {
+            margin-bottom: 15px;
         }
 
     </style>
@@ -91,7 +83,7 @@
 
 <!-- NAVBAR -->
 <div class="navbar">
-    <h2>HokieFind</h2>
+    <h2>Admin Panel</h2>
     <div>
         <a href="/"><button>Home</button></a>
         <a href="/account"><button>Account</button></a>
@@ -102,20 +94,16 @@
 <div class="container">
 
     <div class="card">
-        <h1>Edit Listing</h1>
+        <h2 class="section-title">Create New User</h2>
 
-        <form class="form" method="POST" action="/update/{{ listing[0] }}">
-            
-            <label>Location</label>
-            <input name="location" value="{{ listing[3] }}" required>
+        <form class="form" action="/admin/create_user" method="POST">
+            <input name="first" placeholder="First Name" required>
+            <input name="last" placeholder="Last Name" required>
+            <input name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
 
-            <label>Image URL</label>
-            <input name="image" value="{{ listing[6] }}">
-
-            <button type="submit">Update Listing</button>
+            <button type="submit">Create User</button>
         </form>
-
-        <a class="back" href="/">← Back to Listings</a>
     </div>
 
 </div>
