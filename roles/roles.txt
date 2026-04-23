@@ -1,1 +1,10 @@
-Roles
+Roles: 
+
+Nitin Ankareddy (Developer): I built and improved the user system, including signup, login, logout, 
+and password changes, making sure passwords are stored securely using hashing. I added validation to 
+prevent users from submitting incomplete or incorrect information, and improved error messages so the 
+app is easier to use. I also implemented an admin system with role-based access, so only authorized 
+users can access certain features like creating new users. On the frontend, I redesigned all the pages 
+to have a clean, consistent layout and made the interface more user-friendly. Finally, I connected 
+everything to the database so listings, claims, and reports update correctly and the app works smoothly
+ as a complete system.
