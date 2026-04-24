@@ -14,7 +14,6 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
--- GTID / binlog session lines removed for local imports (avoids ERROR 3546 on existing servers)
 
 --
 -- Table structure for table `categories`
@@ -152,7 +151,7 @@ CREATE TABLE `listings` (
   CONSTRAINT `listings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   CONSTRAINT `listings_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`item_id`),
   CONSTRAINT `listings_ibfk_3` FOREIGN KEY (`status_id`) REFERENCES `claim_status` (`status_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -270,7 +269,7 @@ CREATE TABLE `Users` (
   UNIQUE KEY `email` (`email`),
   KEY `role_id` (`role_id`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -279,7 +278,9 @@ CREATE TABLE `Users` (
 
 LOCK TABLES `Users` WRITE;
 /*!40000 ALTER TABLE `Users` DISABLE KEYS */;
-INSERT INTO `Users` VALUES (1,'Anav','Madan','anav@vt.edu','hash1abc',1,'2026-03-19 13:28:50','user'),(2,'Sarah','Johnson','sarah@vt.edu','hash2abc',2,'2026-03-19 13:28:50','user'),(3,'Marcus','Lee','marcus@vt.edu','hash3abc',2,'2026-03-19 13:28:50','user'),(4,'Priya','Patel','priya@vt.edu','hash4abc',3,'2026-03-19 13:28:50','user'),(5,'Jordan','Smith','jordan@vt.edu','hash5abc',3,'2026-03-19 13:28:50','user'),(6,'Emily','Chen','emily@vt.edu','hash6abc',3,'2026-03-19 13:28:50','user'),(7,'Nitin','Ankareddy','nitinankareddy@vt.edu','$2b$12$KMRPQOzsCjW.0mQh6FFo0uQOKcJ4MU3EogW66NDiD0CmgCVecxZ6C',NULL,'2026-04-23 14:53:49','admin');
+-- Dev-only bcrypt password for users 1–7 and 9: HokieAdmin2026!  (rotate in production.)
+-- App uses roles.role_name via Users.role_id; Users.role string is not used for authz.
+INSERT INTO `Users` VALUES (1,'Anav','Madan','anav@vt.edu','$2b$12$fXlCCsKpCnZX915lYQo4zuPkkelu9DERmr3RVNT..5xoZqb8Rmn/6',1,'2026-03-19 13:28:50','user'),(2,'Sarah','Johnson','sarah@vt.edu','$2b$12$fXlCCsKpCnZX915lYQo4zuPkkelu9DERmr3RVNT..5xoZqb8Rmn/6',2,'2026-03-19 13:28:50','user'),(3,'Marcus','Lee','marcus@vt.edu','$2b$12$fXlCCsKpCnZX915lYQo4zuPkkelu9DERmr3RVNT..5xoZqb8Rmn/6',2,'2026-03-19 13:28:50','user'),(4,'Priya','Patel','priya@vt.edu','$2b$12$fXlCCsKpCnZX915lYQo4zuPkkelu9DERmr3RVNT..5xoZqb8Rmn/6',3,'2026-03-19 13:28:50','user'),(5,'Jordan','Smith','jordan@vt.edu','$2b$12$fXlCCsKpCnZX915lYQo4zuPkkelu9DERmr3RVNT..5xoZqb8Rmn/6',3,'2026-03-19 13:28:50','user'),(6,'Emily','Chen','emily@vt.edu','$2b$12$fXlCCsKpCnZX915lYQo4zuPkkelu9DERmr3RVNT..5xoZqb8Rmn/6',3,'2026-03-19 13:28:50','user'),(7,'Nitin','Ankareddy','nitinankareddy@vt.edu','$2b$12$fXlCCsKpCnZX915lYQo4zuPkkelu9DERmr3RVNT..5xoZqb8Rmn/6',3,'2026-04-23 14:53:49','user'),(8,'Anav','Madan','anav.madan@gmail.com','$2b$12$Qj.7eUym6CfzEjaNYqMGOeD6dNbRBK98xGnxUoPSG8kJp0Sxrc3Ki',3,'2026-04-24 14:35:45','user'),(9,'Site','Admin','admin@hokiefind.local','$2b$12$fXlCCsKpCnZX915lYQo4zuPkkelu9DERmr3RVNT..5xoZqb8Rmn/6',1,'2026-04-24 16:47:05','user');
 /*!40000 ALTER TABLE `Users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -311,6 +312,7 @@ LOCK TABLES `verification` WRITE;
 INSERT INTO `verification` VALUES (1,1,'Screenshot of phone serial number matching.','https://proof.example.com/v1.jpg',0),(2,2,'Photo of engraving J+M 2022 on another ring.','https://proof.example.com/v2.jpg',0),(3,3,'Photo of car registration matching the keys.','https://proof.example.com/v3.jpg',1),(4,4,'Student ID photo matches claimant face.','https://proof.example.com/v4.jpg',1),(5,5,'Receipt from Apple Store for AirPods Pro.','https://proof.example.com/v5.jpg',0),(6,6,'Photo of racket before it was lost.','https://proof.example.com/v6.jpg',0);
 /*!40000 ALTER TABLE `verification` ENABLE KEYS */;
 UNLOCK TABLES;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -321,4 +323,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-24 13:25:49
+-- Dump completed on 2026-04-24 16:50:22

@@ -180,7 +180,11 @@ def api_login():
     if isinstance(stored_hash, str):
         stored_hash = stored_hash.encode("utf-8")
 
-    if not bcrypt.checkpw(password.encode("utf-8"), stored_hash):
+    try:
+        ok = bcrypt.checkpw(password.encode("utf-8"), stored_hash)
+    except ValueError:
+        ok = False
+    if not ok:
         return jsonify({"ok": False, "error": "invalid"}), 401
 
     session["user_id"] = user_id
