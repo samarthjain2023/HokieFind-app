@@ -9,7 +9,7 @@ app.secret_key = "super_secret_key"
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="newpassword",
+    password="password",
     database="lost_and_found"
 )
 
@@ -34,8 +34,11 @@ def signup():
 
         try:
             cursor.execute(
-                "INSERT INTO Users (first_name, last_name, email, password_hash, role) VALUES (%s, %s, %s, %s, %s)",
-                (first, last, email, hashed, "user")
+                """
+                INSERT INTO Users (first_name, last_name, email, password_hash, role_id)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (first, last, email, hashed, 3)
             )
             db.commit()
         except:
@@ -43,16 +46,8 @@ def signup():
 
         return redirect("/login")
 
-    return '''
-        <h2>Signup</h2>
-        <form method="POST">
-            First Name: <input name="first"><br>
-            Last Name: <input name="last"><br>
-            Email: <input name="email"><br>
-            Password: <input type="password" name="password"><br>
-            <button type="submit">Sign Up</button>
-        </form>
-    '''
+    return render_template("sign_up.html")
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -61,7 +56,12 @@ def login():
         password = request.form["password"]
 
         cursor.execute(
-            "SELECT user_id, password_hash, role FROM Users WHERE email = %s",
+            """
+            SELECT u.user_id, u.password_hash, COALESCE(r.role_name, 'user')
+            FROM Users u
+            LEFT JOIN roles r ON u.role_id = r.role_id
+            WHERE u.email = %s
+            """,
             (email,)
         )
         user = cursor.fetchone()
@@ -74,25 +74,19 @@ def login():
 
             if bcrypt.checkpw(password.encode('utf-8'), stored_hash):
                 session["user_id"] = user_id
-                session["role"] = role
+                session["role"] = role.lower()
                 return redirect("/")
 
         return redirect("/login?error=invalid")
 
-    return '''
-        <h2>Login</h2>
-        <form method="POST">
-            Email: <input name="email"><br>
-            Password: <input type="password" name="password"><br>
-            <button type="submit">Login</button>
-        </form>
-        <a href="/signup"><button>Sign Up</button></a>
-    '''
+    return render_template("login.html")
+
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
+
 
 # =========================
 # MAIN ROUTES
@@ -108,6 +102,7 @@ def index():
 
     return render_template("index.html", listings=listings)
 
+
 @app.route("/add", methods=["POST"])
 def add():
     if "user_id" not in session:
@@ -119,7 +114,6 @@ def add():
     image = request.form["image"]
     user_id = session["user_id"]
 
-    # ✅ validation
     if not title.strip() or not description.strip() or not location.strip():
         return redirect("/?error=missing_fields")
 
@@ -134,6 +128,7 @@ def add():
 
     return redirect("/?success=added")
 
+
 @app.route("/delete/<int:id>")
 def delete(id):
     if "user_id" not in session:
@@ -143,6 +138,7 @@ def delete(id):
     db.commit()
     return redirect("/?success=deleted")
 
+
 @app.route("/edit/<int:id>")
 def edit(id):
     if "user_id" not in session:
@@ -151,6 +147,7 @@ def edit(id):
     cursor.execute("SELECT * FROM listings WHERE listing_id = %s", (id,))
     listing = cursor.fetchone()
     return render_template("edit.html", listing=listing)
+
 
 @app.route("/update/<int:id>", methods=["POST"])
 def update(id):
@@ -167,6 +164,7 @@ def update(id):
     db.commit()
 
     return redirect("/?success=updated")
+
 
 # =========================
 # ACCOUNT + PASSWORD
@@ -192,6 +190,7 @@ def account():
     listings = cursor.fetchall()
 
     return render_template("account.html", user=user, listings=listings)
+
 
 @app.route("/change_password", methods=["POST"])
 def change_password():
@@ -231,6 +230,7 @@ def change_password():
 
     return redirect("/account?success=password_updated")
 
+
 # =========================
 # ADMIN
 # =========================
@@ -241,6 +241,7 @@ def admin():
         return "Access denied"
 
     return render_template("admin.html")
+
 
 @app.route("/admin/create_user", methods=["POST"])
 def create_user():
@@ -255,80 +256,16 @@ def create_user():
     hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
     cursor.execute(
-        "INSERT INTO Users (first_name, last_name, email, password_hash, role) VALUES (%s, %s, %s, %s, %s)",
-        (first, last, email, hashed, "user")
+        """
+        INSERT INTO Users (first_name, last_name, email, password_hash, role_id)
+        VALUES (%s, %s, %s, %s, %s)
+        """,
+        (first, last, email, hashed, 3)
     )
     db.commit()
 
     return redirect("/admin?success=user_created")
 
-# =========================
-# CLAIMS + REPORTS
-# =========================
-
-@app.route("/claim/<int:listing_id>", methods=["GET", "POST"])
-def claim(listing_id):
-    if "user_id" not in session:
-        return redirect("/login")
-
-    if request.method == "POST":
-        message = request.form["message"]
-        user_id = session["user_id"]
-
-        if not message.strip():
-            return redirect(f"/claim/{listing_id}?error=empty")
-
-        cursor.execute(
-            "INSERT INTO claims (listing_id, claimant_id, message_to_finder) VALUES (%s, %s, %s)",
-            (listing_id, user_id, message)
-        )
-        db.commit()
-
-        return redirect("/?success=claim_submitted")
-
-    return render_template("claim_form.html")
-
-@app.route("/claims/<int:listing_id>")
-def view_claims(listing_id):
-    if "user_id" not in session:
-        return redirect("/login")
-
-    cursor.execute("""
-        SELECT c.claim_id, u.first_name, u.last_name, c.message_to_finder
-        FROM claims c
-        JOIN Users u ON c.claimant_id = u.user_id
-        WHERE c.listing_id = %s
-    """, (listing_id,))
-
-    claims = cursor.fetchall()
-
-    return render_template("claims.html", claims=claims)
-
-@app.route("/reports")
-def reports():
-    if "user_id" not in session:
-        return redirect("/login")
-
-    cursor.execute("SELECT location_found, COUNT(*) FROM listings GROUP BY location_found")
-    listings_per_location = cursor.fetchall()
-
-    cursor.execute("SELECT listing_id, COUNT(*) FROM claims GROUP BY listing_id")
-    claims_per_listing = cursor.fetchall()
-
-    cursor.execute("""
-        SELECT u.first_name, COUNT(*)
-        FROM listings l
-        JOIN Users u ON l.user_id = u.user_id
-        GROUP BY u.first_name
-    """)
-    listings_per_user = cursor.fetchall()
-
-    return render_template(
-        "reports.html",
-        listings_per_location=listings_per_location,
-        claims_per_listing=claims_per_listing,
-        listings_per_user=listings_per_user
-    )
 
 # =========================
 # RUN
