@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HokieFind</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/ui-kit/kit.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="app"></div>
+
+<script type="text/babel" src="/ui-kit/Primitives.jsx"></script>
+<script type="text/babel" src="/ui-kit/Listings.jsx"></script>
+<script type="text/babel" src="/ui-kit/Screens.jsx"></script>
+
+<script type="text/babel">
+function App() {
+  const [route, setRoute] = React.useState("login");
+  const [booting, setBooting] = React.useState(true);
+  const [authed, setAuthed] = React.useState(false);
+  const [role, setRole] = React.useState("user");
+  const [userProfile, setUserProfile] = React.useState(null);
+  const [state, setState] = React.useState({ listings: [], activeListingId: null, editingListingId: null });
+  const [flash, setFlash] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!flash) return;
+    const t = setTimeout(() => setFlash(null), 5000);
+    return () => clearTimeout(t);
+  }, [flash]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const meRes = await fetch("/api/me", { credentials: "same-origin" });
+        const me = await meRes.json();
+        if (cancelled) return;
+        if (me.authenticated) {
+          setAuthed(true);
+          setRole(me.role || "user");
+          setUserProfile(me);
+          const lr = await fetch("/api/listings", { credentials: "same-origin" });
+          const lj = await lr.json();
+          if (cancelled) return;
+          if (lr.ok) setState((s) => ({ ...s, listings: lj.listings || [] }));
+          setRoute("listings");
+        }
+      } catch (_) { /* offline */ }
+      if (!cancelled) setBooting(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const go = (r) => { setRoute(r); window.scrollTo(0, 0); };
+
+  const loadListings = React.useCallback(async () => {
+    const lr = await fetch("/api/listings", { credentials: "same-origin" });
+    const lj = await lr.json();
+    if (lr.ok) setState((s) => ({ ...s, listings: lj.listings || [] }));
+  }, []);
+
+  const onLogout = async () => {
+    try {
+      await fetch("/api/logout", { method: "POST", credentials: "same-origin" });
+    } catch (_) {}
+    setAuthed(false);
+    setRole("user");
+    setUserProfile(null);
+    setState({ listings: [], activeListingId: null, editingListingId: null });
+    go("login");
+  };
+
+  const needsAuth = !["login", "signup"].includes(route);
+  const showNav = authed && needsAuth;
+
+  if (booting) {
+    return (
+      <div className="hf-container-sm" style={{ padding: "48px 24px", textAlign: "center", color: "var(--fg-muted)" }}>
+        Loading HokieFind…
+      </div>
+    );
+  }
+
+  let screen = null;
+  if (route === "login") {
+    screen = (
+      <LoginScreen
+        go={go}
+        setAuthed={setAuthed}
+        setRole={setRole}
+        setUserProfile={setUserProfile}
+        setState={setState}
+        flash={flash}
+      />
+    );
+  } else if (route === "signup") {
+    screen = <SignUpScreen go={go} setFlash={setFlash} />;
+  } else if (route === "listings") {
+    screen = (
+      <ListingsScreen
+        go={go}
+        state={state}
+        setState={setState}
+        flash={flash}
+        setFlash={setFlash}
+        loadListings={loadListings}
+      />
+    );
+  } else if (route === "claim") {
+    screen = <ClaimFormScreen go={go} state={state} setFlash={setFlash} loadListings={loadListings} />;
+  } else if (route === "claimsList") {
+    screen = <ClaimsListScreen go={go} state={state} />;
+  } else if (route === "account") {
+    screen = (
+      <AccountScreen
+        userProfile={userProfile}
+        setFlash={setFlash}
+        go={go}
+        setState={setState}
+      />
+    );
+  } else if (route === "reports") {
+    screen = <ReportsScreen />;
+  } else if (route === "admin") {
+    screen = <AdminScreen setFlash={setFlash} flash={flash} />;
+  } else if (route === "editListing") {
+    screen = (
+      <EditListingScreen
+        go={go}
+        state={state}
+        setState={setState}
+        setFlash={setFlash}
+        loadListings={loadListings}
+      />
+    );
+  }
+
+  return (
+    <>
+      {showNav && (
+        <NavBar
+          route={route}
+          go={go}
+          authed={authed}
+          isAdmin={role === "admin"}
+          onLogout={onLogout}
+        />
+      )}
+      {screen}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("app")).render(<App />);
+</script>
+</body>
+</html>

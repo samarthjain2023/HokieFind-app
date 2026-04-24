@@ -1,0 +1,55 @@
+/* Shared preview card styling */
+@import url("../colors_and_type.css");
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-surface);
+    color: var(--fg-primary);
+    font-family: var(--font-sans);
+}
+
+.card {
+    padding: 20px 24px;
+    box-sizing: border-box;
+    width: 700px;
+}
+
+.row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    font-weight: 600;
+}
+
+.mono { font-family: var(--font-mono); font-size: 12px; }
+
+.swatch {
+    width: 100%;
+    height: 56px;
+    border-radius: 8px;
+    position: relative;
+}
+.swatch-label {
+    position: absolute;
+    bottom: 6px; left: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: white;
+    mix-blend-mode: difference;
+    opacity: 0.85;
+}

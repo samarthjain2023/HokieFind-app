@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css">
+<style>
+.field { font-family: var(--font-sans); width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid #d6d2d4; font-size: 15px; box-sizing: border-box; background: #fff; color: #1a1718; }
+.field::placeholder { color: #8a8487; }
+.field:focus { outline: 2px solid #E87722; outline-offset: 2px; border-color: #861F41; }
+.field-error { border-color: #b00020; }
+label { font-size: 13px; color: #4a4447; font-weight: 600; display: block; margin-bottom: 4px; }
+.hint { font-size: 12px; color: #6b6468; margin-top: 4px; }
+.err { font-size: 12px; color: #b00020; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="stack" style="gap:14px">
+    <div class="label">Form inputs</div>
+    <div class="row" style="gap:14px;align-items:flex-start">
+      <div style="flex:1">
+        <label>Item Title</label>
+        <input class="field" placeholder="e.g. Blue Hydro Flask">
+        <div class="hint">Appears as the listing's headline.</div>
+      </div>
+      <div style="flex:1">
+        <label>Email</label>
+        <input class="field" value="alex.nguyen@vt.edu" style="outline:2px solid #E87722;outline-offset:2px;border-color:#861F41">
+        <div class="hint" style="color:#E87722">Focused · burnt-orange ring</div>
+      </div>
+      <div style="flex:1">
+        <label>Password</label>
+        <input class="field field-error" type="password" value="••••••">
+        <div class="err">Incorrect current password.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>
