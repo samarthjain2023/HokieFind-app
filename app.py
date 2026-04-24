@@ -328,6 +328,43 @@ def view_claims(listing_id):
 
     return render_template("claims.html", claims=claims)
 
+
+@app.route("/reports")
+def reports():
+    if "user_id" not in session:
+        return redirect("/login")
+
+    cursor.execute(
+        """
+        SELECT u.first_name, u.last_name, COUNT(l.listing_id) AS total_listings
+        FROM Users u
+        JOIN listings l ON u.user_id = l.user_id
+        GROUP BY u.user_id, u.first_name, u.last_name
+        ORDER BY total_listings DESC
+        """
+    )
+    most_active_finders = cursor.fetchall()
+
+    cursor.execute(
+        """
+        SELECT u.first_name, u.last_name, i.item_name, cs.status_name, c.claim_date
+        FROM claims c
+        JOIN Users u ON c.claimant_id = u.user_id
+        JOIN listings l ON c.listing_id = l.listing_id
+        JOIN items i ON l.item_id = i.item_id
+        JOIN claim_status cs ON c.status_id = cs.status_id
+        ORDER BY c.claim_date DESC
+        """
+    )
+    active_claims = cursor.fetchall()
+
+    return render_template(
+        "reports.html",
+        most_active_finders=most_active_finders,
+        active_claims=active_claims,
+    )
+
+
 # =========================
 # RUN
 # =========================
