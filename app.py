@@ -1,16 +1,27 @@
+import os
+
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, session
 import mysql.connector
 import bcrypt
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key"
 
 # DATABASE CONNECTION
+for _key in ("MYSQL_USER", "MYSQL_DATABASE"):
+    if not os.getenv(_key):
+        raise RuntimeError(
+            f"Set {_key} in .env (copy from .env.example). MYSQL_PASSWORD may be empty for local dev."
+        )
+
 db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="password",
-    database="lost_and_found"
+    host=os.getenv("MYSQL_HOST", "localhost"),
+    user=os.environ["MYSQL_USER"],
+    password=os.getenv("MYSQL_PASSWORD"),
+    database=os.environ["MYSQL_DATABASE"],
 )
 
 cursor = db.cursor()
