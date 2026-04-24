@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Claims</title>
+        <title>Claim Item</title>
 
         <style>
             body {
@@ -43,30 +43,25 @@
                 box-shadow: 0 4px 10px rgba(0,0,0,0.08);
             }
 
-            .claim {
-                border-bottom: 1px solid #eee;
-                padding: 15px 0;
+            textarea {
+                width: 100%;
+                height: 120px;
+                padding: 10px;
+                margin-bottom: 10px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+                font-family: Arial, sans-serif;
+                box-sizing: border-box;
             }
 
-            .claim:last-child {
-                border-bottom: none;
-            }
-
-            .title {
+            button.submit {
+                background-color: #861F41;
+                color: white;
+                border: none;
+                padding: 10px 16px;
+                border-radius: 6px;
+                cursor: pointer;
                 font-weight: bold;
-                font-size: 18px;
-                color: #222;
-            }
-
-            .desc {
-                color: #444;
-                margin-top: 6px;
-            }
-
-            .date {
-                color: #777;
-                margin-top: 6px;
-                font-size: 14px;
             }
 
             .actions a {
@@ -74,6 +69,17 @@
                 color: #861F41;
                 text-decoration: none;
                 font-weight: bold;
+            }
+
+            .msg {
+                padding: 10px;
+                margin-bottom: 15px;
+                border-radius: 6px;
+            }
+
+            .error {
+                background-color: #ffe5e5;
+                color: #b00020;
             }
         </style>
     </head>
@@ -89,22 +95,19 @@
         </div>
 
         <div class="container">
-            <h1>Claims</h1>
+            <h1>Claim Item</h1>
+
+            {% if request.args.get('error') == 'empty' %}
+                <div class="msg error">Please explain why this item is yours.</div>
+            {% endif %}
 
             <div class="card">
-                <h2>Submitted Claims</h2>
+                <h2>Submit a Claim</h2>
 
-                {% if claims %}
-                    {% for claim in claims %}
-                        <div class="claim">
-                            <div class="title">{{ claim[1] }} {{ claim[2] }}</div>
-                            <div class="desc">{{ claim[3] }}</div>
-                            <div class="date">{{ claim[4] }}</div>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p>No claims yet.</p>
-                {% endif %}
+                <form method="POST">
+                    <textarea name="message" placeholder="Explain why this item is yours" required></textarea>
+                    <button class="submit" type="submit">Submit Claim</button>
+                </form>
 
                 <br>
 

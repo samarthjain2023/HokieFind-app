@@ -268,6 +268,56 @@ def create_user():
 
 
 # =========================
+# CLAIMS
+# =========================
+
+@app.route("/claim/<int:listing_id>", methods=["GET", "POST"])
+def claim(listing_id):
+    if "user_id" not in session:
+        return redirect("/login")
+
+    if request.method == "POST":
+        message = request.form["message"]
+        user_id = session["user_id"]
+
+        if not message.strip():
+            return redirect(f"/claim/{listing_id}?error=empty")
+
+        cursor.execute(
+            """
+            INSERT INTO claims (listing_id, claimant_id, message_to_finder, status_id)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (listing_id, user_id, message, 1)
+        )
+        db.commit()
+
+        return redirect("/?success=claim_submitted")
+
+    return render_template("claim_form.html", listing_id=listing_id)
+
+
+@app.route("/claims/<int:listing_id>")
+def view_claims(listing_id):
+    if "user_id" not in session:
+        return redirect("/login")
+
+    cursor.execute(
+        """
+        SELECT c.claim_id, u.first_name, u.last_name, c.message_to_finder, c.claim_date
+        FROM claims c
+        JOIN Users u ON c.claimant_id = u.user_id
+        WHERE c.listing_id = %s
+        ORDER BY c.claim_date DESC
+        """,
+        (listing_id,)
+    )
+
+    claims = cursor.fetchall()
+
+    return render_template("claims.html", claims=claims)
+
+# =========================
 # RUN
 # =========================
 
