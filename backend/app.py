@@ -2,23 +2,28 @@ import os
 import uuid
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template, request, redirect, session, send_from_directory
+from flask import Flask, jsonify, request, redirect, session, send_from_directory
 from werkzeug.exceptions import RequestEntityTooLarge
 import mysql.connector
 import bcrypt
 
-load_dotenv()
-
+# This file lives in backend/; static assets and the UI kit stay at repo root.
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-_UPLOAD_FOLDER = os.path.join(_BASE_DIR, "static", "uploads")
-_UI_KIT_DIR = os.path.join(_BASE_DIR, "frontend", "ui_kits", "hokiefind-web")
-_FRONTEND_DIR = os.path.join(_BASE_DIR, "frontend")
+_ROOT_DIR = os.path.normpath(os.path.join(_BASE_DIR, ".."))
+load_dotenv(os.path.join(_ROOT_DIR, ".env"))
+_UPLOAD_FOLDER = os.path.join(_ROOT_DIR, "static", "uploads")
+_UI_KIT_DIR = os.path.join(_ROOT_DIR, "frontend", "ui_kits", "hokiefind-web")
+_FRONTEND_DIR = os.path.join(_ROOT_DIR, "frontend")
 os.makedirs(_UPLOAD_FOLDER, exist_ok=True)
 
 _ALLOWED_IMAGE_EXT = frozenset({"png", "jpg", "jpeg", "gif", "webp"})
 _MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MiB
 
-app = Flask(__name__, template_folder="frontend")
+app = Flask(
+    __name__,
+    static_folder=os.path.join(_ROOT_DIR, "static"),
+    static_url_path="/static",
+)
 app.secret_key = "super_secret_key"
 app.config["MAX_CONTENT_LENGTH"] = _MAX_IMAGE_BYTES
 
@@ -52,10 +57,6 @@ def _save_listing_image_file(file_storage):
 def _handle_file_too_large(_e):
     if request.path.startswith("/api/"):
         return jsonify({"error": "file_too_large", "message": "File exceeds 5 MB limit."}), 413
-    if request.path.startswith("/update"):
-        tail = request.path.replace("/update/", "", 1).split("/", 1)[0]
-        if tail.isdigit():
-            return redirect(f"/edit/{tail}?error=file_too_large")
     return redirect("/?error=file_too_large")
 
 # DATABASE CONNECTION
@@ -559,282 +560,34 @@ def api_admin_create_user():
 
 
 # =========================
-# AUTH ROUTES
+# SPA shell + bookmarks (all behavior lives in /api/* + React)
 # =========================
 
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
-    if request.method == "GET":
-        return redirect("/")
-
-    if request.method == "POST":
-        first = request.form["first"]
-        last = request.form["last"]
-        email = request.form["email"]
-        password = request.form["password"]
-
-        if not first or not last or not email or not password:
-            return redirect("/?error=signup_missing_fields")
-
-        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-
-        try:
-            cursor.execute(
-                """
-                INSERT INTO Users (first_name, last_name, email, password_hash, role_id)
-                VALUES (%s, %s, %s, %s, %s)
-                """,
-                (first, last, email, hashed, 3)
-            )
-            db.commit()
-        except:
-            return redirect("/?error=signup_user_exists")
-
-        return redirect("/")
-
-    return redirect("/")
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "GET":
-        return redirect("/")
-
-    if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
-
-        cursor.execute(
-            """
-            SELECT u.user_id, u.password_hash, COALESCE(r.role_name, 'user')
-            FROM Users u
-            LEFT JOIN roles r ON u.role_id = r.role_id
-            WHERE u.email = %s
-            """,
-            (email,)
-        )
-        user = cursor.fetchone()
-
-        if user:
-            user_id, stored_hash, role = user
-
-            if isinstance(stored_hash, str):
-                stored_hash = stored_hash.encode('utf-8')
-
-            if bcrypt.checkpw(password.encode('utf-8'), stored_hash):
-                session["user_id"] = user_id
-                session["role"] = role.lower()
-                return redirect("/")
-
-        return redirect("/?error=invalid_login")
-
-    return redirect("/")
-
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
-
-
-# =========================
-# MAIN ROUTES (SPA shell + legacy form posts)
-# =========================
 
 @app.route("/")
 def index():
     return send_from_directory(_UI_KIT_DIR, "index.html")
 
 
-@app.route("/add", methods=["POST"])
-def add():
-    if "user_id" not in session:
-        return redirect("/")
-
-    title = request.form["title"]
-    description = request.form["description"]
-    location = request.form["location"]
-    user_id = session["user_id"]
-
-    if not title.strip() or not description.strip() or not location.strip():
-        return redirect("/?error=missing_fields")
-
-    upload = request.files.get("image_file")
-    saved = _save_listing_image_file(upload)
-    if upload and upload.filename and saved is None:
-        return redirect("/?error=invalid_image")
-    image = saved if saved else (request.form.get("image") or "").strip()
-
-    cursor.execute(
-        """
-        INSERT INTO listings (user_id, title, description, location_found, image_url)
-        VALUES (%s, %s, %s, %s, %s)
-        """,
-        (user_id, title, description, location, image)
-    )
-    db.commit()
-
-    return redirect("/?success=added")
-
-
-@app.route("/delete/<int:id>")
-def delete(id):
-    if "user_id" not in session:
-        return redirect("/")
-
-    cursor.execute("DELETE FROM listings WHERE listing_id = %s", (id,))
-    db.commit()
-    return redirect("/?success=deleted")
-
-
-@app.route("/edit/<int:id>")
-def edit(id):
+@app.get("/login")
+@app.get("/signup")
+@app.get("/account")
+@app.get("/admin")
+@app.get("/reports")
+def spa_redirect_flat():
     return redirect("/")
 
 
-@app.route("/update/<int:id>", methods=["POST"])
-def update(id):
-    if "user_id" not in session:
-        return redirect("/")
-
-    location = request.form["location"]
-
-    upload = request.files.get("image_file")
-    saved = _save_listing_image_file(upload)
-    if upload and upload.filename and saved is None:
-        return redirect(f"/edit/{id}?error=invalid_image")
-    if saved:
-        image = saved
-    else:
-        image = (request.form.get("image") or "").strip()
-
-    cursor.execute(
-        "UPDATE listings SET location_found = %s, image_url = %s WHERE listing_id = %s",
-        (location, image, id)
-    )
-    db.commit()
-
-    return redirect("/?success=updated")
-
-
-# =========================
-# ACCOUNT + PASSWORD
-# =========================
-
-@app.route("/account")
-def account():
+@app.get("/edit/<int:listing_id>")
+@app.get("/claims/<int:listing_id>")
+@app.get("/claim/<int:listing_id>")
+def spa_redirect_listing(listing_id):
     return redirect("/")
 
 
-@app.route("/change_password", methods=["POST"])
-def change_password():
-    if "user_id" not in session:
-        return redirect("/")
-
-    current_password = request.form["current_password"]
-    new_password = request.form["new_password"]
-
-    if not current_password or not new_password:
-        return redirect("/?error=password_missing")
-
-    cursor.execute(
-        "SELECT password_hash FROM Users WHERE user_id = %s",
-        (session["user_id"],)
-    )
-    result = cursor.fetchone()
-
-    if result is None:
-        return redirect("/")
-
-    stored_hash = result[0]
-
-    if isinstance(stored_hash, str):
-        stored_hash = stored_hash.encode('utf-8')
-
-    if not bcrypt.checkpw(current_password.encode('utf-8'), stored_hash):
-        return redirect("/?error=wrong_password")
-
-    new_hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
-
-    cursor.execute(
-        "UPDATE Users SET password_hash = %s WHERE user_id = %s",
-        (new_hashed, session["user_id"])
-    )
-    db.commit()
-
-    return redirect("/?success=password_updated")
-
-
-# =========================
-# ADMIN
-# =========================
-
-@app.route("/admin")
-def admin():
-    return redirect("/")
-
-
-@app.route("/admin/create_user", methods=["POST"])
-def create_user():
-    if "user_id" not in session or session.get("role") != "admin":
-        return "Access denied"
-
-    first = request.form["first"]
-    last = request.form["last"]
-    email = request.form["email"]
-    password = request.form["password"]
-
-    hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-
-    cursor.execute(
-        """
-        INSERT INTO Users (first_name, last_name, email, password_hash, role_id)
-        VALUES (%s, %s, %s, %s, %s)
-        """,
-        (first, last, email, hashed, 3)
-    )
-    db.commit()
-
-    return redirect("/?success=user_created")
-
-
-# =========================
-# CLAIMS
-# =========================
-
-@app.route("/claim/<int:listing_id>", methods=["GET", "POST"])
-def claim(listing_id):
-    if "user_id" not in session:
-        return redirect("/")
-
-    if request.method == "POST":
-        message = request.form["message"]
-        user_id = session["user_id"]
-
-        if not message.strip():
-            return redirect(f"/claim/{listing_id}?error=empty")
-
-        cursor.execute(
-            """
-            INSERT INTO claims (listing_id, claimant_id, message_to_finder, status_id)
-            VALUES (%s, %s, %s, %s)
-            """,
-            (listing_id, user_id, message, 1)
-        )
-        db.commit()
-
-        return redirect("/?success=claim_submitted")
-
-    return redirect("/")
-
-
-@app.route("/claims/<int:_listing_id>")
-def view_claims(_listing_id):
-    return redirect("/")
-
-
-@app.route("/reports")
-def reports():
+@app.route("/logout", methods=["GET", "POST"])
+def logout():
+    session.clear()
     return redirect("/")
 
 
