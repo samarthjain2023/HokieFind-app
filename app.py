@@ -1,14 +1,58 @@
 import os
+import uuid
 
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, session
+from werkzeug.exceptions import RequestEntityTooLarge
 import mysql.connector
 import bcrypt
 
 load_dotenv()
 
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+_UPLOAD_FOLDER = os.path.join(_BASE_DIR, "static", "uploads")
+os.makedirs(_UPLOAD_FOLDER, exist_ok=True)
+
+_ALLOWED_IMAGE_EXT = frozenset({"png", "jpg", "jpeg", "gif", "webp"})
+_MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MiB
+
 app = Flask(__name__, template_folder="frontend")
 app.secret_key = "super_secret_key"
+app.config["MAX_CONTENT_LENGTH"] = _MAX_IMAGE_BYTES
+
+
+def _image_ext(filename: str) -> str | None:
+    if not filename or "." not in filename:
+        return None
+    ext = filename.rsplit(".", 1)[1].lower()
+    return ext if ext in _ALLOWED_IMAGE_EXT else None
+
+
+def _save_listing_image_file(file_storage):
+    """
+    Save uploaded image to static/uploads. Returns relative URL path for image_url, or None if invalid.
+    """
+    if not file_storage or not file_storage.filename:
+        return None
+    ext = _image_ext(file_storage.filename)
+    if not ext:
+        return None
+    ct = (file_storage.content_type or "").lower()
+    if ct and not ct.startswith("image/"):
+        return None
+    stored_name = f"{uuid.uuid4().hex}.{ext}"
+    dest = os.path.join(_UPLOAD_FOLDER, stored_name)
+    file_storage.save(dest)
+    return f"/static/uploads/{stored_name}"
+
+
+@app.errorhandler(RequestEntityTooLarge)
+def _handle_file_too_large(_e):
+    if request.path.startswith("/update"):
+        tail = request.path.replace("/update/", "", 1).split("/", 1)[0]
+        if tail.isdigit():
+            return redirect(f"/edit/{tail}?error=file_too_large")
+    return redirect("/?error=file_too_large")
 
 # DATABASE CONNECTION
 for _key in ("MYSQL_USER", "MYSQL_DATABASE"):
@@ -122,11 +166,16 @@ def add():
     title = request.form["title"]
     description = request.form["description"]
     location = request.form["location"]
-    image = request.form["image"]
     user_id = session["user_id"]
 
     if not title.strip() or not description.strip() or not location.strip():
         return redirect("/?error=missing_fields")
+
+    upload = request.files.get("image_file")
+    saved = _save_listing_image_file(upload)
+    if upload and upload.filename and saved is None:
+        return redirect("/?error=invalid_image")
+    image = saved if saved else (request.form.get("image") or "").strip()
 
     cursor.execute(
         """
@@ -166,7 +215,15 @@ def update(id):
         return redirect("/login")
 
     location = request.form["location"]
-    image = request.form["image"]
+
+    upload = request.files.get("image_file")
+    saved = _save_listing_image_file(upload)
+    if upload and upload.filename and saved is None:
+        return redirect(f"/edit/{id}?error=invalid_image")
+    if saved:
+        image = saved
+    else:
+        image = (request.form.get("image") or "").strip()
 
     cursor.execute(
         "UPDATE listings SET location_found = %s, image_url = %s WHERE listing_id = %s",

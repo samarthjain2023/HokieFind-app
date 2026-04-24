@@ -124,6 +124,14 @@
         <div class="msg error">Please fill out all required fields.</div>
     {% endif %}
 
+    {% if request.args.get('error') == 'invalid_image' %}
+        <div class="msg error">Image must be PNG, JPG, JPEG, GIF, or WebP (max 5 MB).</div>
+    {% endif %}
+
+    {% if request.args.get('error') == 'file_too_large' %}
+        <div class="msg error">Uploaded file is too large (max 5 MB).</div>
+    {% endif %}
+
     {% if request.args.get('success') == 'added' %}
         <div class="msg success">Listing added successfully!</div>
     {% endif %}
@@ -140,11 +148,13 @@
     <div class="card">
         <h2>Add Listing</h2>
 
-        <form class="form" action="/add" method="POST">
+        <form class="form" action="/add" method="POST" enctype="multipart/form-data">
             <input name="title" placeholder="Item Title" required>
             <input name="description" placeholder="Description" required>
             <input name="location" placeholder="Location Found" required>
-            <input name="image" placeholder="Image URL">
+            <label style="display:block;margin-bottom:6px;color:#444;font-size:14px;">Image (optional)</label>
+            <input name="image_file" type="file" accept="image/png,image/jpeg,image/gif,image/webp,.png,.jpg,.jpeg,.gif,.webp" style="padding:8px 0;">
+            <input name="image" type="text" placeholder="Or paste an image URL instead">
             <button type="submit">Add Listing</button>
         </form>
     </div>
