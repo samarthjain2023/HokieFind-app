@@ -21,7 +21,8 @@ SET @@SESSION.SQL_LOG_BIN= 0;
 -- GTID state at the beginning of the backup 
 --
 
-SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'bcf02db4-23b4-11f1-8246-d73276ba421c:1-43';
+SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'bcf02db4-23b4-11f1-8246-d73276ba421c:1-43,
+d573bf84-2e0b-11f1-8a28-943651f3d13c:1-30';
 
 --
 -- Table structure for table `categories`
@@ -92,7 +93,7 @@ CREATE TABLE `claims` (
   CONSTRAINT `claims_ibfk_1` FOREIGN KEY (`listing_id`) REFERENCES `listings` (`listing_id`),
   CONSTRAINT `claims_ibfk_2` FOREIGN KEY (`claimant_id`) REFERENCES `users` (`user_id`),
   CONSTRAINT `claims_ibfk_3` FOREIGN KEY (`status_id`) REFERENCES `claim_status` (`status_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -101,7 +102,7 @@ CREATE TABLE `claims` (
 
 LOCK TABLES `claims` WRITE;
 /*!40000 ALTER TABLE `claims` DISABLE KEYS */;
-INSERT INTO `claims` VALUES (1,1,4,'2026-03-19 13:28:50',1,'I think this is my iPhone, I lost it after my 2pm class.'),(2,2,5,'2026-03-19 13:28:50',2,'That ring belongs to my girlfriend, she lost it studying.'),(3,3,6,'2026-03-19 13:28:50',3,'Those are my car keys, Honda Civic key with a blue lanyard.'),(4,5,5,'2026-03-19 13:28:50',3,'That is my student ID, Jordan Smith.'),(5,6,4,'2026-03-19 13:28:50',1,'I lost my AirPods at the gym last Tuesday.'),(6,7,6,'2026-03-19 13:28:50',2,'My tennis racket with orange grip tape, lost after practice.');
+INSERT INTO `claims` VALUES (1,1,4,'2026-03-19 13:28:50',1,'I think this is my iPhone, I lost it after my 2pm class.'),(2,2,5,'2026-03-19 13:28:50',2,'That ring belongs to my girlfriend, she lost it studying.'),(3,3,6,'2026-03-19 13:28:50',3,'Those are my car keys, Honda Civic key with a blue lanyard.'),(4,5,5,'2026-03-19 13:28:50',3,'That is my student ID, Jordan Smith.'),(5,6,4,'2026-03-19 13:28:50',1,'I lost my AirPods at the gym last Tuesday.'),(6,7,6,'2026-03-19 13:28:50',2,'My tennis racket with orange grip tape, lost after practice.'),(7,23,7,'2026-04-23 15:27:23',NULL,'this is my item');
 /*!40000 ALTER TABLE `claims` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -150,6 +151,8 @@ CREATE TABLE `listings` (
   `date_posted` datetime DEFAULT CURRENT_TIMESTAMP,
   `status_id` int DEFAULT NULL,
   `image_url` varchar(255) DEFAULT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `description` text,
   PRIMARY KEY (`listing_id`),
   KEY `user_id` (`user_id`),
   KEY `item_id` (`item_id`),
@@ -157,7 +160,7 @@ CREATE TABLE `listings` (
   CONSTRAINT `listings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   CONSTRAINT `listings_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`item_id`),
   CONSTRAINT `listings_ibfk_3` FOREIGN KEY (`status_id`) REFERENCES `claim_status` (`status_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -166,7 +169,7 @@ CREATE TABLE `listings` (
 
 LOCK TABLES `listings` WRITE;
 /*!40000 ALTER TABLE `listings` DISABLE KEYS */;
-INSERT INTO `listings` VALUES (1,2,1,'Torgersen Hall Room 1060','2026-03-19 13:28:50',1,'https://images.example.com/iphone.jpg'),(2,2,4,'Newman Library 2nd Floor','2026-03-19 13:28:50',1,'https://images.example.com/ring.jpg'),(3,3,5,'Parking Lot C, Squires','2026-03-19 13:28:50',2,'https://images.example.com/keys.jpg'),(4,3,3,'Dietrick Dining Hall','2026-03-19 13:28:50',1,'https://images.example.com/jacket.jpg'),(5,2,6,'McBryde Hall Lobby','2026-03-19 13:28:50',3,'https://images.example.com/id.jpg'),(6,3,2,'War Memorial Gym','2026-03-19 13:28:50',1,'https://images.example.com/airpods.jpg'),(7,3,7,'Rector Field House','2026-03-19 13:28:50',2,'https://images.example.com/racket.jpg');
+INSERT INTO `listings` VALUES (1,2,1,'Torgersen Hall Room 1060','2026-03-19 13:28:50',1,'https://images.example.com/iphone.jpg',NULL,NULL),(2,2,4,'Newman Library 2nd Floor','2026-03-19 13:28:50',1,'https://images.example.com/ring.jpg',NULL,NULL),(3,3,5,'Parking Lot C, Squires','2026-03-19 13:28:50',2,'https://images.example.com/keys.jpg',NULL,NULL),(4,3,3,'Dietrick Dining Hall','2026-03-19 13:28:50',1,'https://images.example.com/jacket.jpg',NULL,NULL),(5,2,6,'McBryde Hall Lobby','2026-03-19 13:28:50',3,'https://images.example.com/id.jpg',NULL,NULL),(6,3,2,'War Memorial Gym','2026-03-19 13:28:50',1,'https://images.example.com/airpods.jpg',NULL,NULL),(7,3,7,'Rector Field House','2026-03-19 13:28:50',2,'https://images.example.com/racket.jpg',NULL,NULL),(9,NULL,NULL,'Alight Blacksburg ','2026-04-01 17:03:37',NULL,'https://alight-blacksburg.com/wp-content/uploads/sites/19/2021/10/ABLA_LogoSpot-VerHIGH-copy.jpg',NULL,NULL),(10,NULL,NULL,'Mccomas Hall','2026-04-03 12:36:22',NULL,'',NULL,NULL),(11,NULL,NULL,'Ambler Johnson Hall','2026-04-03 12:36:59',NULL,'',NULL,NULL),(12,NULL,NULL,'Engel Hall','2026-04-03 12:37:09',NULL,'',NULL,NULL),(13,NULL,NULL,'Latham Hall','2026-04-03 12:37:17',NULL,'',NULL,NULL),(14,NULL,NULL,'Pearson Hall West','2026-04-03 12:37:31',NULL,'',NULL,NULL),(15,NULL,NULL,'Pearson Hall East','2026-04-03 12:37:35',NULL,'',NULL,NULL),(16,NULL,NULL,'Pamplin Hall','2026-04-03 12:37:49',NULL,'',NULL,NULL),(17,NULL,NULL,'Steger Hall','2026-04-03 12:37:56',NULL,'',NULL,NULL),(18,NULL,NULL,'Sheep Barn','2026-04-03 12:38:06',NULL,'',NULL,NULL),(19,NULL,NULL,'Cochrane Hall','2026-04-03 12:38:26',NULL,'',NULL,NULL),(20,NULL,NULL,'Payne Hall','2026-04-03 12:38:36',NULL,'',NULL,NULL),(22,NULL,NULL,'Terraceview Apartments','2026-04-03 13:03:58',NULL,'URL',NULL,NULL),(23,7,NULL,'Newman Hall','2026-04-23 15:19:28',NULL,'','Water Bottle','Black Owala Water Bottle with JJK sticker');
 /*!40000 ALTER TABLE `listings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -256,13 +259,13 @@ INSERT INTO `transaction_history` VALUES (1,1,'CLAIM_SUBMITTED','2026-03-19 13:2
 UNLOCK TABLES;
 
 --
--- Table structure for table `users`
+-- Table structure for table `Users`
 --
 
-DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `Users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `users` (
+CREATE TABLE `Users` (
   `user_id` int NOT NULL AUTO_INCREMENT,
   `first_name` varchar(50) NOT NULL,
   `last_name` varchar(50) NOT NULL,
@@ -270,21 +273,22 @@ CREATE TABLE `users` (
   `password_hash` varchar(255) NOT NULL,
   `role_id` int DEFAULT NULL,
   `date_created` datetime DEFAULT CURRENT_TIMESTAMP,
+  `role` varchar(20) DEFAULT 'user',
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `email` (`email`),
   KEY `role_id` (`role_id`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `users`
+-- Dumping data for table `Users`
 --
 
-LOCK TABLES `users` WRITE;
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Anav','Madan','anav@vt.edu','hash1abc',1,'2026-03-19 13:28:50'),(2,'Sarah','Johnson','sarah@vt.edu','hash2abc',2,'2026-03-19 13:28:50'),(3,'Marcus','Lee','marcus@vt.edu','hash3abc',2,'2026-03-19 13:28:50'),(4,'Priya','Patel','priya@vt.edu','hash4abc',3,'2026-03-19 13:28:50'),(5,'Jordan','Smith','jordan@vt.edu','hash5abc',3,'2026-03-19 13:28:50'),(6,'Emily','Chen','emily@vt.edu','hash6abc',3,'2026-03-19 13:28:50');
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+LOCK TABLES `Users` WRITE;
+/*!40000 ALTER TABLE `Users` DISABLE KEYS */;
+INSERT INTO `Users` VALUES (1,'Anav','Madan','anav@vt.edu','hash1abc',1,'2026-03-19 13:28:50','user'),(2,'Sarah','Johnson','sarah@vt.edu','hash2abc',2,'2026-03-19 13:28:50','user'),(3,'Marcus','Lee','marcus@vt.edu','hash3abc',2,'2026-03-19 13:28:50','user'),(4,'Priya','Patel','priya@vt.edu','hash4abc',3,'2026-03-19 13:28:50','user'),(5,'Jordan','Smith','jordan@vt.edu','hash5abc',3,'2026-03-19 13:28:50','user'),(6,'Emily','Chen','emily@vt.edu','hash6abc',3,'2026-03-19 13:28:50','user'),(7,'Nitin','Ankareddy','nitinankareddy@vt.edu','$2b$12$KMRPQOzsCjW.0mQh6FFo0uQOKcJ4MU3EogW66NDiD0CmgCVecxZ6C',NULL,'2026-04-23 14:53:49','admin');
+/*!40000 ALTER TABLE `Users` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -326,4 +330,4 @@ SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-01 16:18:45
+-- Dump completed on 2026-04-24 13:25:49
