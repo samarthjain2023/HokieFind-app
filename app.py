@@ -7,7 +7,7 @@ import bcrypt
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="frontend")
 app.secret_key = "super_secret_key"
 
 # DATABASE CONNECTION
