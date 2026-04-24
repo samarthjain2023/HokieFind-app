@@ -104,13 +104,33 @@
     <div class="card">
         <h1>Edit Listing</h1>
 
-        <form class="form" method="POST" action="/update/{{ listing[0] }}">
+        {% if request.args.get('error') == 'invalid_image' %}
+            <div class="msg error" style="padding:10px;margin-bottom:15px;border-radius:6px;background:#ffe5e5;color:#b00020;">
+                Image must be PNG, JPG, JPEG, GIF, or WebP (max 5 MB).
+            </div>
+        {% endif %}
+
+        {% if request.args.get('error') == 'file_too_large' %}
+            <div class="msg error" style="padding:10px;margin-bottom:15px;border-radius:6px;background:#ffe5e5;color:#b00020;">
+                Uploaded file is too large (max 5 MB).
+            </div>
+        {% endif %}
+
+        {% if listing[6] %}
+            <p style="margin:0 0 10px;color:#555;font-size:14px;">Current image</p>
+            <img src="{{ listing[6] }}" alt="Listing" style="max-width:220px;border-radius:8px;margin-bottom:16px;display:block;">
+        {% endif %}
+
+        <form class="form" method="POST" action="/update/{{ listing[0] }}" enctype="multipart/form-data">
             
             <label>Location</label>
             <input name="location" value="{{ listing[3] }}" required>
 
-            <label>Image URL</label>
-            <input name="image" value="{{ listing[6] }}">
+            <label>Replace image (optional)</label>
+            <input name="image_file" type="file" accept="image/png,image/jpeg,image/gif,image/webp,.png,.jpg,.jpeg,.gif,.webp" style="padding:8px 0;">
+
+            <label>Or image URL</label>
+            <input name="image" type="text" value="{{ listing[6] or '' }}" placeholder="https://... or leave blank to clear">
 
             <button type="submit">Update Listing</button>
         </form>
