@@ -14,15 +14,7 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-SET @MYSQLDUMP_TEMP_LOG_BIN = @@SESSION.SQL_LOG_BIN;
-SET @@SESSION.SQL_LOG_BIN= 0;
-
---
--- GTID state at the beginning of the backup 
---
-
-SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'bcf02db4-23b4-11f1-8246-d73276ba421c:1-43,
-d573bf84-2e0b-11f1-8a28-943651f3d13c:1-30';
+-- GTID / binlog session lines removed for local imports (avoids ERROR 3546 on existing servers)
 
 --
 -- Table structure for table `categories`
@@ -319,7 +311,6 @@ LOCK TABLES `verification` WRITE;
 INSERT INTO `verification` VALUES (1,1,'Screenshot of phone serial number matching.','https://proof.example.com/v1.jpg',0),(2,2,'Photo of engraving J+M 2022 on another ring.','https://proof.example.com/v2.jpg',0),(3,3,'Photo of car registration matching the keys.','https://proof.example.com/v3.jpg',1),(4,4,'Student ID photo matches claimant face.','https://proof.example.com/v4.jpg',1),(5,5,'Receipt from Apple Store for AirPods Pro.','https://proof.example.com/v5.jpg',0),(6,6,'Photo of racket before it was lost.','https://proof.example.com/v6.jpg',0);
 /*!40000 ALTER TABLE `verification` ENABLE KEYS */;
 UNLOCK TABLES;
-SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
